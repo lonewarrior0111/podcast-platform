@@ -11,9 +11,6 @@ const podcastSlice = createSlice({
     setPodcasts: (state, action) => {
       state.podcasts = action.payload;
     },
-    clearPodcasts: (state) => {
-      state.podcasts = null;
-    },
   },
 });
 
