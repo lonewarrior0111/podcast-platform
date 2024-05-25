@@ -14,6 +14,7 @@ function SignUpPage() {
   // const handleSignUp = () => {
   //   console.log(`handling signup`);
   // };
+  // here we are trying to switch between pages on click from sign up to login page //
   return (
     <div>
       <Header />
