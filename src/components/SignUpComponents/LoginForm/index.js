@@ -7,14 +7,17 @@ import { doc, getDoc } from "firebase/firestore";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setUser } from "../../../slices/userSlice";
-
+import { toast } from "react-toastify";
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const handleLogin = async () => {
     console.log(`handling login`);
+    setLoading(true);
     if (email && password) {
       try {
         const userCredential = await signInWithEmailAndPassword(
@@ -34,24 +37,23 @@ function LoginForm() {
             uid: user.uid,
           })
         );
-
+        toast.success("Login Successful!");
+        setLoading(false);
         navigate("/profile");
-      } catch (e) {
-        console.log(`error==> `, e);
+      } catch (error) {
+        // console.log(`error==> `, e);
+        setLoading(false);
+        // console.log(error.message);
+        toast.error(error.message);
       }
     } else {
-      console.log(`there is some error`);
+      // console.log(`there is some error`);
+      toast.error("fill in all the required fields!");
+      setLoading(false);
     }
   };
   return (
     <>
-      {/* <InputComponent
-        state={fullName}
-        setState={setFullName}
-        placeholder={"Enter full name"}
-        type={"text"}
-        required={true}
-      /> */}
       <InputComponent
         state={email}
         setState={setEmail}
@@ -66,14 +68,12 @@ function LoginForm() {
         type={"password"}
         required={true}
       />
-      {/* <InputComponent
-        state={confirmPassword}
-        setState={setConfirmPassword}
-        placeholder={"confim password"}
-        type={"password"}
-        required={true}
-      /> */}
-      <Button text={"Login"} onClick={handleLogin} />
+
+      <Button
+        text={loading ? "Loading..." : "Login"}
+        onClick={handleLogin}
+        disabled={loading}
+      />
     </>
   );
 }

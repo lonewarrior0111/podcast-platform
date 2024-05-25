@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { auth, db } from "../../../firebase";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import InputComponent from "../../common/Input";
 import Button from "../../common/Button";
@@ -13,12 +14,14 @@ function SignUpForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleSignUp = async () => {
     console.log(`handling signup...`);
+    setLoading(true);
     if (
       password === confirmPassword &&
       password.length >= 6 &&
@@ -48,12 +51,21 @@ function SignUpForm() {
             uid: user.uid,
           })
         );
+        toast.success("Account created!");
+        setLoading(false);
         navigate("/profile");
       } catch (e) {
-        console.log(`error==> `, e);
+        // console.log(`error==> `, e);
+        toast.error(e.message);
+        setLoading(false);
       }
     } else {
-      console.log(`there is some error!`);
+      if (password !== confirmPassword) {
+        toast.error("Password and confirm password not matching!");
+      } else if (password.length < 6) {
+        toast.error("password length should be greater than 6 characters!");
+      }
+      setLoading(false);
     }
   };
   return (
@@ -86,7 +98,11 @@ function SignUpForm() {
         type={"password"}
         required={true}
       />
-      <Button text={"SignUp"} onClick={handleSignUp} />
+      <Button
+        text={loading ? "Loading..." : "Signup"}
+        disabled={loading}
+        onClick={handleSignUp}
+      />
     </>
   );
 }
