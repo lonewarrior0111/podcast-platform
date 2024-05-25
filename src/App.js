@@ -4,15 +4,58 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SignUpPage from "./pages/SignUp";
 import Profile from "./pages/Profile";
+import { useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "./firebase";
+import { doc, onSnapshot } from "firebase/firestore";
+import { useDispatch } from "react-redux";
+import { setUser } from "./slices/userSlice";
+import PrivateRoutes from "./components/common/PrivateRoutes";
 
 function App() {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const unsubscribeSnapshot = onSnapshot(
+          doc(db, "users", user.uid),
+          (userDoc) => {
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              dispatch(
+                setUser({
+                  name: userData.name,
+                  email: userData.email,
+                  uid: user.uid,
+                })
+              );
+            }
+          },
+          (error) => {
+            console.error("Error fetching user data:", error);
+          }
+        );
+        return () => {
+          unsubscribeSnapshot();
+        };
+      }
+    });
+    return () => {
+      unsubscribeAuth();
+    };
+  }, []);
   return (
     <div className="App">
       <ToastContainer />
       <Router>
         <Routes>
           <Route path="/" element={<SignUpPage />} />
-          <Route path="/profile" element={<Profile />} />
+          {/* 
+          all the routes inside this pvt route are now private means accessible only to authenticated users //
+          */}
+          <Route element={<PrivateRoutes />}>
+            <Route path="/profile" element={<Profile />} />
+          </Route>
         </Routes>
       </Router>
     </div>
