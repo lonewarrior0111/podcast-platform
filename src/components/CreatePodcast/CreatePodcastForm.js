@@ -6,6 +6,9 @@ import InputComponent from "../common/Input";
 import Button from "../common/Button";
 import { toast } from "react-toastify";
 import FileInput from "../common/Input/FileInput";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { auth, db, storage } from "../../firebase";
+import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 
 function CreatePodcastForm() {
   const [loading, setLoading] = useState(false);
@@ -20,10 +23,46 @@ function CreatePodcastForm() {
     if (title && desc && displayImage && bannerImage) {
       setLoading(true);
       // 1. Upload files -> get downloadable links
-      // 2. create a new doc iin a new collection called podcasts
-      // 3. save this new podcast episodes states in our podcasts
+      try {
+        // banner image //
+        const bannerImageRef = ref(
+          storage,
+          `podcasts/${auth.currentUser.uid}/${Date.now()}`
+        );
+        await uploadBytes(bannerImageRef, bannerImage);
+        const bannerImageUrl = await getDownloadURL(bannerImageRef);
+        // display image //
+        const displayImageRef = ref(
+          storage,
+          `podcasts/${auth.currentUser.uid}/${Date.now()}`
+        );
+        await uploadBytes(displayImageRef, displayImage);
+        const displayImageUrl = await getDownloadURL(displayImageRef);
+
+        // 2. create a new doc iin a new collection called podcasts //
+        const podcastData = {
+          title: title,
+          description: desc,
+          bannerImage: bannerImageUrl,
+          displayImage: displayImageUrl,
+          createdBy: auth.currentUser.uid,
+        };
+
+        // 3. save this new podcast episodes states in our podcasts
+        const docRef = await addDoc(collection(db, "podcasts"), podcastData);
+        setTitle("");
+        setDesc("");
+        setBannerImage(null);
+        setDisplayImage(null);
+        toast.success("Podcast Created!");
+        setLoading(false);
+      } catch (e) {
+        toast.error(e.message);
+        console.log(e);
+        setLoading(false);
+      }
     } else {
-      toast.error("Please Enter All Values");
+      toast.error("Please enter all Values");
       setLoading(false);
     }
   };
