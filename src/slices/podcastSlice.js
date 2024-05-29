@@ -14,5 +14,5 @@ const podcastSlice = createSlice({
   },
 });
 
-export const { setPodcasts, clearPodcasts } = podcastSlice.actions;
+export const { setPodcasts } = podcastSlice.actions;
 export default podcastSlice.reducer;
