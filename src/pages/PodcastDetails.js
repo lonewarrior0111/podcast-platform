@@ -39,6 +39,25 @@ function PodcastDetailsPage() {
     }
   };
 
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      query(collection(db, "podcasts", id, "episodes")),
+      (querySnapshot) => {
+        const episodesData = [];
+        querySnapshot.forEach((doc) => {
+          episodesData.push({ id: doc.id, ...doc.data() });
+        });
+        setEpisodes(episodesData);
+      },
+      (error) => {
+        console.error("Error fetching episodes:", error);
+      }
+    );
+    return () => {
+      unsubscribe();
+    };
+  }, [id]);
+
   return (
     <div>
       <Header />
@@ -81,7 +100,7 @@ function PodcastDetailsPage() {
                       title={episode.title}
                       description={episode.description}
                       audioFile={episode.audioFile}
-                      onClick={(file) => setPlayingFile(file)}
+                      onClick={(file) => console.log("playing file! " + file)}
                     />
                   );
                 })}
