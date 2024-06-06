@@ -100,7 +100,7 @@ function PodcastDetailsPage() {
                       title={episode.title}
                       description={episode.description}
                       audioFile={episode.audioFile}
-                      onClick={(file) => console.log("playing file! " + file)}
+                      onClick={(file) => setPlayingFile(file)}
                     />
                   );
                 })}
